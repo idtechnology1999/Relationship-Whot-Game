@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import axios from 'axios'
+import { api as axios } from '../lib/api'
 import { useAuth } from '../context/AuthContext'
 import { getSocket, disconnectSocket } from '../socket/socket'
 import { Socket } from 'socket.io-client'

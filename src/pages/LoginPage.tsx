@@ -1,6 +1,6 @@
 import { useState, FormEvent, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import axios from 'axios'
+import { api as axios } from '../lib/api'
 import { useAuth } from '../context/AuthContext'
 import styles from './Auth.module.css'
 

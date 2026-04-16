@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import axios from 'axios'
+import { api as axios } from '../lib/api'
 import { useAuth } from '../context/AuthContext'
 import styles from './Dashboard.module.css'
 
