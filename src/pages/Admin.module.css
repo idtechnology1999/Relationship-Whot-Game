@@ -1,0 +1,209 @@
+.loginWrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(155deg, #0d1b2a 0%, #11253a 50%, #07131f 100%);
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+.loginBox {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+  padding: 2.5rem 2rem;
+  width: 100%;
+  max-width: 360px;
+  text-align: center;
+  backdrop-filter: blur(10px);
+}
+
+.adminBadge {
+  display: inline-block;
+  background: rgba(233,69,96,0.15);
+  border: 1px solid rgba(233,69,96,0.35);
+  border-radius: 20px;
+  padding: 0.3rem 0.9rem;
+  font-size: 0.85rem;
+  color: #e94560;
+  margin-bottom: 1rem;
+}
+
+.loginTitle {
+  color: #eaeaea;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 1.5rem;
+}
+
+.loginErr {
+  background: rgba(233,69,96,0.12);
+  border: 1px solid rgba(233,69,96,0.3);
+  border-radius: 8px;
+  color: #e94560;
+  padding: 0.5rem;
+  font-size: 0.88rem;
+  margin-bottom: 1rem;
+}
+
+.loginForm {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.input {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 8px;
+  padding: 0.7rem 1rem;
+  color: #eaeaea;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+  font-family: inherit;
+}
+.input:focus { border-color: #e94560; }
+.input::placeholder { color: #555; }
+
+.loginBtn {
+  background: #e94560;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 0.3rem;
+}
+.loginBtn:hover { background: #c73652; }
+
+/* Admin dashboard */
+.page {
+  min-height: 100vh;
+  background: linear-gradient(155deg, #0d1b2a 0%, #11253a 50%, #07131f 100%);
+  color: #eaeaea;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 2rem;
+  background: rgba(0,0,0,0.4);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.adminBadgeSmall {
+  background: rgba(233,69,96,0.15);
+  border: 1px solid rgba(233,69,96,0.35);
+  border-radius: 20px;
+  padding: 0.2rem 0.7rem;
+  font-size: 0.8rem;
+  color: #e94560;
+}
+
+.pageTitle {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0;
+  color: #eaeaea;
+}
+
+.logoutBtn {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #aaa;
+  border-radius: 6px;
+  padding: 0.35rem 0.8rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: color 0.2s, border-color 0.2s;
+}
+.logoutBtn:hover { color: #e94560; border-color: #e94560; }
+
+.statsBar {
+  display: flex;
+  gap: 1rem;
+  padding: 1.5rem 2rem;
+  flex-wrap: wrap;
+}
+
+.statCard {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 140px;
+}
+
+.statValue {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #00c9a7;
+}
+
+.statLabel {
+  font-size: 0.78rem;
+  color: #888;
+  margin-top: 0.2rem;
+}
+
+.tableWrap {
+  padding: 0 2rem 3rem;
+  overflow-x: auto;
+}
+
+.loading, .empty {
+  color: #777;
+  text-align: center;
+  padding: 3rem;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.table th {
+  text-align: left;
+  color: #888;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  vertical-align: top;
+}
+
+.table tr:hover td {
+  background: rgba(255,255,255,0.03);
+}
+
+.iconCell { font-size: 1.5rem; }
+.usernameCell { font-weight: 600; color: #eaeaea; }
+.commentCell { color: #ccc; max-width: 360px; line-height: 1.5; }
+.dateCell { color: #777; white-space: nowrap; font-size: 0.82rem; }
+
+.stars { display: flex; gap: 2px; }
+.starOn  { color: #f7b731; }
+.starOff { color: rgba(255,255,255,0.15); }

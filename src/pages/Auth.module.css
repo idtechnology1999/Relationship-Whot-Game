@@ -3,8 +3,35 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
   padding: 1rem;
+  position: relative;
+  overflow: hidden;
+  background-color: #0d1b2a;
+  /* Real-life photo of people playing card games (Pexels — free to use) */
+  background-image: url("https://images.pexels.com/photos/8111364/pexels-photo-8111364.jpeg?auto=compress&cs=tinysrgb&w=1920&q=80");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Dark overlay so the login card stays readable over the photo */
+.container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    155deg,
+    rgba(10, 20, 35, 0.78) 0%,
+    rgba(5, 15, 30, 0.70) 50%,
+    rgba(10, 20, 35, 0.80) 100%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+.container > * {
+  position: relative;
+  z-index: 1;
 }
 
 .card {

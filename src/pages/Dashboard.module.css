@@ -26,6 +26,25 @@
   font-size: 0.9rem;
 }
 
+.notifBtn {
+  background: transparent;
+  border: none;
+  font-size: 1.4rem;
+  cursor: pointer;
+  border-radius: 50%;
+  width: 2.2rem;
+  height: 2.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, transform 0.15s;
+  line-height: 1;
+}
+.notifBtn:hover {
+  background: rgba(255,255,255,0.08);
+  transform: scale(1.12);
+}
+
 .logoutBtn {
   background: transparent;
   border: 1px solid rgba(255,255,255,0.2);

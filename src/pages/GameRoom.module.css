@@ -535,6 +535,23 @@
 }
 .overlayBtn:hover { background: rgba(0, 201, 167, 0.3); }
 
+.rematchRequest {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(0, 201, 167, 0.4);
+  border-radius: 10px;
+  padding: 0.8rem 1.2rem;
+  margin-top: 0.8rem;
+  text-align: center;
+  color: #eaeaea;
+}
+
+.rematchWaiting {
+  color: #aaa;
+  font-size: 0.9rem;
+  margin-top: 0.6rem;
+  text-align: center;
+}
+
 .shapeGrid {
   display: flex;
   flex-wrap: wrap;

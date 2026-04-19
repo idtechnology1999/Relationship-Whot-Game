@@ -88,6 +88,13 @@ export default function DashboardPage() {
       <header className={styles.header}>
         <h1 className={styles.logo}>Relationship Game</h1>
         <div className={styles.userInfo}>
+          <button
+            className={styles.notifBtn}
+            onClick={() => navigate('/reviews')}
+            title="Share your experience / view player reviews"
+          >
+            🔔
+          </button>
           <span>👤 {user?.username}</span>
           <button className={styles.logoutBtn} onClick={logout}>Logout</button>
         </div>

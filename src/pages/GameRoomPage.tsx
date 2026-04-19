@@ -60,6 +60,7 @@ const SPECIAL_LABEL: Record<number, string> = {
   2:  'Pick 2',
   5:  'Pick 3',
   8:  'Suspend',
+  14: 'Gen. Market',
   20: 'WHOT!',
 }
 
@@ -162,6 +163,9 @@ export default function GameRoomPage() {
   const [keyCopied, setKeyCopied] = useState(false)
   const [winner, setWinner] = useState<string | null>(null)
   const [connectTimeout, setConnectTimeout] = useState(false)
+  const [rematchRequested, setRematchRequested] = useState(false)   // I requested rematch, waiting
+  const [rematchIncoming, setRematchIncoming] = useState<{ requesterUsername: string; sessionId: string } | null>(null)
+  const [rematchDeclined, setRematchDeclined] = useState(false)
 
   // Keyboard / interaction state
   const [selectedPile, setSelectedPile] = useState<1 | 2 | null>(null)
@@ -239,6 +243,20 @@ export default function GameRoomPage() {
       setTimeout(() => setError(''), 3500)
     })
 
+    s.on('rematch-requested', (data: { requesterUsername: string; sessionId: string }) => {
+      setRematchIncoming(data)
+    })
+
+    s.on('rematch-accepted', ({ sessionId: newId }: { sessionId: string }) => {
+      disconnectSocket()
+      navigate(`/game/${newId}`)
+    })
+
+    s.on('rematch-declined', () => {
+      setRematchRequested(false)
+      setRematchDeclined(true)
+    })
+
     return () => {
       clearTimeout(timeoutId)
       s.off('connect', onConnect)
@@ -248,6 +266,9 @@ export default function GameRoomPage() {
       s.off('action-log')
       s.off('player-disconnected')
       s.off('error')
+      s.off('rematch-requested')
+      s.off('rematch-accepted')
+      s.off('rematch-declined')
     }
   }, [token, sessionId])
 
@@ -404,6 +425,59 @@ export default function GameRoomPage() {
             <div className={styles.overlayTitle}>
               {winner === myName ? '🎉 You Win!' : `${winner} Wins!`}
             </div>
+
+            {/* Rematch incoming request */}
+            {rematchIncoming && (
+              <div className={styles.rematchRequest}>
+                <p><strong>{rematchIncoming.requesterUsername}</strong> wants to play again!</p>
+                <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', marginTop: '0.5rem' }}>
+                  <button
+                    className={styles.overlayBtn}
+                    style={{ background: '#00c9a7' }}
+                    onClick={() => {
+                      socketRef.current?.emit('respond-rematch', { sessionId: rematchIncoming.sessionId, accepted: true })
+                      setRematchIncoming(null)
+                    }}
+                  >
+                    Accept
+                  </button>
+                  <button
+                    className={styles.overlayBtn}
+                    style={{ background: '#555' }}
+                    onClick={() => {
+                      socketRef.current?.emit('respond-rematch', { sessionId: rematchIncoming.sessionId, accepted: false })
+                      setRematchIncoming(null)
+                    }}
+                  >
+                    Decline
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* My rematch request status */}
+            {!rematchIncoming && rematchRequested && (
+              <p className={styles.rematchWaiting}>Waiting for opponent to accept…</p>
+            )}
+            {!rematchIncoming && rematchDeclined && (
+              <p className={styles.rematchWaiting} style={{ color: '#e94560' }}>Opponent declined the rematch.</p>
+            )}
+
+            {/* Buttons */}
+            {!rematchIncoming && !rematchRequested && (
+              <button
+                className={styles.overlayBtn}
+                style={{ background: '#00c9a7', color: '#000' }}
+                onClick={() => {
+                  socketRef.current?.emit('request-rematch', { sessionId })
+                  setRematchRequested(true)
+                  setRematchDeclined(false)
+                }}
+              >
+                Play Again with {opponentName}
+              </button>
+            )}
+
             <button className={styles.overlayBtn} onClick={handleLeave}>
               Back to Dashboard
             </button>

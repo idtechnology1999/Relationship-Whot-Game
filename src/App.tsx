@@ -4,6 +4,8 @@ import RegisterPage from './pages/RegisterPage'
 import LoginPage from './pages/LoginPage'
 import DashboardPage from './pages/DashboardPage'
 import GameRoomPage from './pages/GameRoomPage'
+import ReviewPage from './pages/ReviewPage'
+import AdminPage from './pages/AdminPage'
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { token } = useAuth()
@@ -31,6 +33,15 @@ export default function App() {
           </PrivateRoute>
         }
       />
+      <Route
+        path="/reviews"
+        element={
+          <PrivateRoute>
+            <ReviewPage />
+          </PrivateRoute>
+        }
+      />
+      <Route path="/admin" element={<AdminPage />} />
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   )
