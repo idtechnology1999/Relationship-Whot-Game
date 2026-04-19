@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, ReactNode } from 'react'
+import { api as axios } from '../lib/api'
 
 interface AuthUser {
   id: string
@@ -32,6 +33,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   function logout() {
+    const t = localStorage.getItem('rg_token')
+    if (t) {
+      // Fire-and-forget — abandon any active/waiting session so user can start fresh
+      axios.post('/api/game/abandon', {}, { headers: { Authorization: `Bearer ${t}` } }).catch(() => {})
+    }
     localStorage.removeItem('rg_token')
     localStorage.removeItem('rg_user')
     setToken(null)
