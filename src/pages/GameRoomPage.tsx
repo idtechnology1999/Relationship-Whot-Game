@@ -433,7 +433,7 @@ export default function GameRoomPage() {
                 <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', marginTop: '0.5rem' }}>
                   <button
                     className={styles.overlayBtn}
-                    style={{ background: '#00c9a7' }}
+                    style={{ background: '#00c9a7', color: '#000', borderColor: '#00c9a7' }}
                     onClick={() => {
                       socketRef.current?.emit('respond-rematch', { sessionId: rematchIncoming.sessionId, accepted: true })
                       setRematchIncoming(null)
@@ -443,7 +443,7 @@ export default function GameRoomPage() {
                   </button>
                   <button
                     className={styles.overlayBtn}
-                    style={{ background: '#555' }}
+                    style={{ background: '#c0392b', color: '#fff', borderColor: '#c0392b' }}
                     onClick={() => {
                       socketRef.current?.emit('respond-rematch', { sessionId: rematchIncoming.sessionId, accepted: false })
                       setRematchIncoming(null)
