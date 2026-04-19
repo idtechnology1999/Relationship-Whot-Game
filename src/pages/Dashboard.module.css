@@ -26,6 +26,12 @@
   font-size: 0.9rem;
 }
 
+.notifWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
 .notifBtn {
   background: transparent;
   border: none;
@@ -39,10 +45,75 @@
   justify-content: center;
   transition: background 0.2s, transform 0.15s;
   line-height: 1;
+  animation: bellRing 3s ease-in-out infinite;
 }
 .notifBtn:hover {
   background: rgba(255,255,255,0.08);
-  transform: scale(1.12);
+  transform: scale(1.15);
+  animation: none;
+}
+
+@keyframes bellRing {
+  0%, 85%, 100% { transform: rotate(0deg); }
+  88%           { transform: rotate(14deg); }
+  91%           { transform: rotate(-12deg); }
+  94%           { transform: rotate(10deg); }
+  97%           { transform: rotate(-8deg); }
+}
+
+/* Tooltip */
+.tooltip {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  background: linear-gradient(135deg, #1a1a2e, #16213e);
+  border: 1px solid rgba(233,69,96,0.45);
+  border-radius: 12px;
+  padding: 0.65rem 0.9rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  white-space: nowrap;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+  color: #eaeaea;
+  font-size: 0.82rem;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-6px);
+  transition: opacity 0.22s ease, transform 0.22s ease;
+  z-index: 100;
+}
+
+/* Arrow pointing up */
+.tooltip::before {
+  content: '';
+  position: absolute;
+  top: -7px;
+  right: 14px;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-bottom: 7px solid rgba(233,69,96,0.45);
+}
+
+.notifWrap:hover .tooltip {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.tooltipEmoji {
+  font-size: 1.1rem;
+}
+
+.tooltip strong {
+  color: #e94560;
+  font-size: 0.88rem;
+}
+
+.tooltipSub {
+  color: #aaa;
+  font-size: 0.78rem;
 }
 
 .logoutBtn {
