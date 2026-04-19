@@ -13,6 +13,26 @@ export default function DashboardPage() {
   const [enterKey, setEnterKey] = useState('')
   const [error, setError] = useState('')
   const [activeSessionId, setActiveSessionId] = useState('')
+  const [showTooltip, setShowTooltip] = useState(false)
+
+  // Auto-show tooltip after 1.2s, hide after 6s, then re-appear every 18s
+  useEffect(() => {
+    const show = () => setShowTooltip(true)
+    const hide = () => setShowTooltip(false)
+
+    const firstShow  = setTimeout(show, 1200)
+    const firstHide  = setTimeout(hide, 7200)
+    const interval   = setInterval(() => {
+      setShowTooltip(true)
+      setTimeout(hide, 6000)
+    }, 18000)
+
+    return () => {
+      clearTimeout(firstShow)
+      clearTimeout(firstHide)
+      clearInterval(interval)
+    }
+  }, [])
   const [loadingGenerate, setLoadingGenerate] = useState(false)
   const [loadingConnect, setLoadingConnect] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -91,15 +111,21 @@ export default function DashboardPage() {
           <div className={styles.notifWrap}>
             <button
               className={styles.notifBtn}
-              onClick={() => navigate('/reviews')}
+              onClick={() => { setShowTooltip(false); navigate('/reviews') }}
             >
               🔔
             </button>
-            <div className={styles.tooltip}>
-              <span className={styles.tooltipEmoji}>💬</span>
-              <strong>Share your opinion!</strong>
-              <span className={styles.tooltipSub}>Click to rate &amp; review the game</span>
-            </div>
+            {showTooltip && (
+              <div
+                className={styles.tooltip}
+                onClick={() => { setShowTooltip(false); navigate('/reviews') }}
+              >
+                <span className={styles.tooltipEmoji}>💬</span>
+                <strong>Share your opinion!</strong>
+                <span className={styles.tooltipSub}>Tap here to rate &amp; review the game</span>
+                <span className={styles.tooltipCta}>👆 Click me!</span>
+              </div>
+            )}
           </div>
           <span>👤 {user?.username}</span>
           <button className={styles.logoutBtn} onClick={logout}>Logout</button>
