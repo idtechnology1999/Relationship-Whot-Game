@@ -20,6 +20,9 @@ interface Partner {
 interface ActiveGame {
   sessionId: string
   connectionKey: string
+  opponent?: string
+  myWins?: number
+  partnerWins?: number
 }
 
 export default function DashboardPage() {
@@ -176,22 +179,27 @@ export default function DashboardPage() {
           <div className={styles.activeGamesSection}>
             <h3 className={styles.sectionTitle}>🎮 Active Games</h3>
             <div className={styles.activeGamesGrid}>
-              {activeSessions.map((session) => {
-                const partner = partners.find(p => p.activeSessionId === session.sessionId)
-                return (
-                  <div key={session.sessionId} className={styles.activeGameCard}>
-                    <div className={styles.activeGameInfo}>
+              {activeSessions.map((session) => (
+                <div key={session.sessionId} className={styles.activeGameCard}>
+                  <div className={styles.activeGameInfo}>
+                    <div className={styles.activeGameHeader}>
+                      <span className={styles.activeGameVs}>vs</span>
                       <span className={styles.activeGameOpponent}>
-                        {partner ? `vs ${partner.partnerUsername}` : 'Game in Progress'}
+                        {session.opponent || 'Game in Progress'}
                       </span>
-                      <span className={styles.activeGameStatus}>Active Now</span>
                     </div>
-                    <button className={styles.continueBtn} onClick={() => continueGame(session.sessionId)}>
-                      Join →
-                    </button>
+                    <div className={styles.activeGameScore}>
+                      <span className={styles.activeGameMyScore}>{session.myWins || 0}</span>
+                      <span className={styles.activeGameScoreDivider}>-</span>
+                      <span className={styles.activeGamePartnerScore}>{session.partnerWins || 0}</span>
+                    </div>
+                    <span className={styles.activeGameStatus}>Active Now</span>
                   </div>
-                )
-              })}
+                  <button className={styles.continueBtn} onClick={() => continueGame(session.sessionId)}>
+                    Join →
+                  </button>
+                </div>
+              ))}
             </div>
           </div>
         )}
@@ -223,11 +231,17 @@ export default function DashboardPage() {
                 {partners.map((partner) => (
                   <div key={partner.relationshipId} className={styles.partnerCard}>
                     <div className={styles.partnerHeader}>
-                      <span className={styles.partnerName}>vs {partner.partnerUsername}</span>
-                      <div className={styles.partnerScore}>
-                        <span className={styles.partnerScoreWin}>{partner.myWins}W</span>
-                        <span>-</span>
-                        <span className={styles.partnerScoreLoss}>{partner.partnerWins}L</span>
+                      <div className={styles.partnerInfo}>
+                        <span className={styles.partnerVs}>vs</span>
+                        <span className={styles.partnerName}>{partner.partnerUsername}</span>
+                      </div>
+                      <div className={styles.scoreBox}>
+                        <div className={styles.scoreTitle}>Score</div>
+                        <div className={styles.scoreValue}>
+                          <span className={partner.myWins > 0 ? styles.scoreUserWin : styles.scoreUser}>{partner.myWins}</span>
+                          <span className={styles.scoreDivider}>-</span>
+                          <span className={partner.partnerWins > 0 ? styles.scoreOpponentWin : styles.scoreOpponent}>{partner.partnerWins}</span>
+                        </div>
                       </div>
                     </div>
                     <div className={styles.partnerActions}>

@@ -434,26 +434,63 @@
 }
 
 .activeGameCard {
-  background: rgba(0, 201, 167, 0.08);
-  border: 1px solid rgba(0, 201, 167, 0.25);
-  border-radius: 12px;
-  padding: 1rem 1.2rem;
+  background: linear-gradient(135deg, rgba(0, 201, 167, 0.12) 0%, rgba(0, 201, 167, 0.05) 100%);
+  border: 1px solid rgba(0, 201, 167, 0.3);
+  border-radius: 14px;
+  padding: 1.2rem 1.4rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: 1.5rem;
 }
 
 .activeGameInfo {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.activeGameHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.activeGameVs {
+  color: #888;
+  font-size: 0.8rem;
 }
 
 .activeGameOpponent {
   color: #fff;
-  font-weight: 600;
-  font-size: 1rem;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.activeGameScore {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(0,0,0,0.3);
+  border-radius: 6px;
+  padding: 0.3rem 0.6rem;
+}
+
+.activeGameMyScore {
+  color: #00c9a7;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.activeGameScoreDivider {
+  color: #555;
+}
+
+.activeGamePartnerScore {
+  color: #e94560;
+  font-weight: 700;
+  font-size: 0.9rem;
 }
 
 .activeGameStatus {
@@ -491,41 +528,81 @@
 .partnerCard {
   background: rgba(255,255,255,0.05);
   border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 12px;
-  padding: 1.2rem;
+  border-radius: 16px;
+  padding: 1.5rem;
   display: flex;
   flex-direction: column;
-  gap: 0.8rem;
+  gap: 1rem;
 }
 
 .partnerHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.partnerInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.partnerVs {
+  font-size: 0.85rem;
+  color: #888;
 }
 
 .partnerName {
-  font-size: 1.05rem;
-  font-weight: 600;
+  font-size: 1.1rem;
+  font-weight: 700;
   color: #fff;
 }
 
-.partnerScore {
+.scoreBox {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.9rem;
-  color: #aaa;
+  background: rgba(0,0,0,0.3);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
 }
 
-.partnerScoreWin {
+.scoreTitle {
+  font-size: 0.7rem;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.scoreValue {
+  font-size: 1.1rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.scoreUser {
+  color: #eaeaea;
+}
+
+.scoreUserWin {
   color: #00c9a7;
-  font-weight: 600;
 }
 
-.partnerScoreLoss {
+.scoreDivider {
+  color: #555;
+  margin: 0 0.25rem;
+}
+
+.scoreOpponent {
+  color: #eaeaea;
+}
+
+.scoreOpponentWin {
   color: #e94560;
-  font-weight: 600;
 }
 
 .partnerActions {

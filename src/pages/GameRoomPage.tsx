@@ -169,6 +169,7 @@ export default function GameRoomPage() {
 
   const [showScoreModal, setShowScoreModal] = useState(false)
   const [scoreData, setScoreData] = useState<{ myWins: number; partnerWins: number; clearStatus: string; isMyRequest: boolean } | null>(null)
+  const [liveScore, setLiveScore] = useState<{ myWins: number; partnerWins: number }>({ myWins: 0, partnerWins: 0 })
 
   // Keyboard / interaction state
   const [selectedPile, setSelectedPile] = useState<1 | 2 | null>(null)
@@ -185,12 +186,17 @@ export default function GameRoomPage() {
   selectedCardIdxRef.current = selectedCardIdx
   socketRef.current       = socket
 
-  // Fetch room key so host can share it
+  // Fetch room key and score so host can share it
   useEffect(() => {
     if (!token || !sessionId) return
     axios
       .get(`/api/game/session/${sessionId}`, { headers: { Authorization: `Bearer ${token}` } })
       .then(({ data }) => setRoomKey(data.session.connectionKey))
+      .catch(() => {})
+    
+    axios
+      .get(`/api/game/session-score/${sessionId}`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(({ data }) => setLiveScore({ myWins: data.myWins || 0, partnerWins: data.partnerWins || 0 }))
       .catch(() => {})
   }, [token, sessionId])
 
@@ -231,6 +237,11 @@ export default function GameRoomPage() {
 
     s.on('game-over', ({ winner: w }: { winner: string }) => {
       setWinner(w)
+      // Refresh score after game ends
+      axios
+        .get(`/api/game/session-score/${sessionId}`, { headers: { Authorization: `Bearer ${token}` } })
+        .then(({ data }) => setLiveScore({ myWins: data.myWins || 0, partnerWins: data.partnerWins || 0 }))
+        .catch(() => {})
     })
 
     s.on('action-log', ({ player, action }: { player: string; action: string }) => {
@@ -543,9 +554,13 @@ export default function GameRoomPage() {
           {turnLabel}
         </div>
         <div className={styles.deckInfo}>
-          Market: <strong>{gameState.deckCount}</strong>
+          <span className={styles.scoreBar}>
+            <span className={styles.scoreBarWin}>{liveScore.myWins}</span>
+            <span className={styles.scoreBarDivider}>-</span>
+            <span className={styles.scoreBarLoss}>{liveScore.partnerWins}</span>
+          </span>
           <button className={styles.scoreBtn} onClick={() => setShowScoreModal(true)}>
-            Score
+            Full Score
           </button>
         </div>
       </header>
@@ -556,21 +571,23 @@ export default function GameRoomPage() {
           <div className={styles.scoreModalBox} onClick={e => e.stopPropagation()}>
             <button className={styles.scoreModalClose} onClick={() => setShowScoreModal(false)}>×</button>
             <div className={styles.scoreModalTitle}>Score</div>
-            <div className={styles.scoreModalContent}>
-              <div className={styles.scoreModalScore}>
-                <span className={styles.scoreWin}>{user?.username}</span>
-                <span style={{ color: '#666' }}>vs</span>
-                <span>{opponentName}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', fontSize: '1.5rem', fontWeight: 700 }}>
-                <span className={styles.scoreWin}>W</span>
-                <span style={{ color: '#888' }}>-</span>
-                <span className={styles.scoreLoss}>L</span>
-              </div>
+            <div className={styles.scoreModalVs}>vs</div>
+            <div className={styles.scoreModalNames}>
+              <span className={styles.scoreModalPlayer}>{user?.username}</span>
+              <span style={{ color: '#666', fontSize: '0.9rem' }}>vs</span>
+              <span className={styles.scoreModalPlayer}>{opponentName}</span>
+            </div>
+            <div className={styles.scoreModalScore}>
+              <span className={styles.scoreModalWin}>{liveScore.myWins}</span>
+              <span className={styles.scoreModalDivider}>-</span>
+              <span className={styles.scoreModalLoss}>{liveScore.partnerWins}</span>
             </div>
             <div className={styles.scoreModalActions}>
-              <button className={styles.scoreModalBtn} onClick={requestScoreClear}>
+              <button className={`${styles.scoreModalBtn} ${styles.scoreModalBtnPrimary}`} onClick={requestScoreClear}>
                 Clear Score
+              </button>
+              <button className={styles.scoreModalBtn} onClick={() => setShowScoreModal(false)}>
+                Close
               </button>
             </div>
           </div>
