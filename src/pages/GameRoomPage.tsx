@@ -167,6 +167,9 @@ export default function GameRoomPage() {
   const [rematchIncoming, setRematchIncoming] = useState<{ requesterUsername: string; sessionId: string } | null>(null)
   const [rematchDeclined, setRematchDeclined] = useState(false)
 
+  const [showScoreModal, setShowScoreModal] = useState(false)
+  const [scoreData, setScoreData] = useState<{ myWins: number; partnerWins: number; clearStatus: string; isMyRequest: boolean } | null>(null)
+
   // Keyboard / interaction state
   const [selectedPile, setSelectedPile] = useState<1 | 2 | null>(null)
   const [selectedCardIdx, setSelectedCardIdx] = useState<number | null>(null)
@@ -257,6 +260,23 @@ export default function GameRoomPage() {
       setRematchDeclined(true)
     })
 
+    s.on('score-clear-requested', ({ requesterUsername }: { requesterUsername: string }) => {
+      setError(`${requesterUsername} wants to clear the score`)
+      setTimeout(() => setError(''), 5000)
+    })
+
+    s.on('score-clear-sent', () => {
+      addLog('Score clear request sent to opponent')
+    })
+
+    s.on('score-clear-cancelled', () => {
+      addLog('Score clear request cancelled')
+    })
+
+    s.on('score-cleared', ({ confirmed }: { confirmed: boolean }) => {
+      addLog(confirmed ? 'Score has been cleared!' : 'Score clear request processed')
+    })
+
     return () => {
       clearTimeout(timeoutId)
       s.off('connect', onConnect)
@@ -269,6 +289,10 @@ export default function GameRoomPage() {
       s.off('rematch-requested')
       s.off('rematch-accepted')
       s.off('rematch-declined')
+      s.off('score-clear-requested')
+      s.off('score-clear-sent')
+      s.off('score-clear-cancelled')
+      s.off('score-cleared')
     }
   }, [token, sessionId])
 
@@ -290,6 +314,10 @@ export default function GameRoomPage() {
   const pickMarket = useCallback(() => {
     socketRef.current?.emit('pick-market', { sessionId })
     setSelectedCardIdx(null)
+  }, [sessionId])
+
+  const requestScoreClear = useCallback(() => {
+    socketRef.current?.emit('request-score-clear', { sessionId })
   }, [sessionId])
 
   // ── Keyboard controls ──────────────────────────────────────────────────────
@@ -516,8 +544,38 @@ export default function GameRoomPage() {
         </div>
         <div className={styles.deckInfo}>
           Market: <strong>{gameState.deckCount}</strong>
+          <button className={styles.scoreBtn} onClick={() => setShowScoreModal(true)}>
+            Score
+          </button>
         </div>
       </header>
+
+      {/* SCORE MODAL */}
+      {showScoreModal && (
+        <div className={styles.scoreModal} onClick={() => setShowScoreModal(false)}>
+          <div className={styles.scoreModalBox} onClick={e => e.stopPropagation()}>
+            <button className={styles.scoreModalClose} onClick={() => setShowScoreModal(false)}>×</button>
+            <div className={styles.scoreModalTitle}>Score</div>
+            <div className={styles.scoreModalContent}>
+              <div className={styles.scoreModalScore}>
+                <span className={styles.scoreWin}>{user?.username}</span>
+                <span style={{ color: '#666' }}>vs</span>
+                <span>{opponentName}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', fontSize: '1.5rem', fontWeight: 700 }}>
+                <span className={styles.scoreWin}>W</span>
+                <span style={{ color: '#888' }}>-</span>
+                <span className={styles.scoreLoss}>L</span>
+              </div>
+            </div>
+            <div className={styles.scoreModalActions}>
+              <button className={styles.scoreModalBtn} onClick={requestScoreClear}>
+                Clear Score
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* WAITING BANNER */}
       {waitingForOpponent && (

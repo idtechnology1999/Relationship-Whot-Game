@@ -412,3 +412,235 @@
     font-size: 0.9rem;
   }
 }
+
+.sectionTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #aaa;
+  margin: 2rem 0 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.activeGamesSection {
+  margin-bottom: 1.5rem;
+}
+
+.activeGamesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.activeGameCard {
+  background: rgba(0, 201, 167, 0.08);
+  border: 1px solid rgba(0, 201, 167, 0.25);
+  border-radius: 12px;
+  padding: 1rem 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.activeGameInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.activeGameOpponent {
+  color: #fff;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.activeGameStatus {
+  color: #00c9a7;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.activeGameStatus::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: #00c9a7;
+  border-radius: 50%;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.partnersSection {
+  margin-bottom: 1.5rem;
+}
+
+.partnersGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.partnerCard {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.partnerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.partnerName {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.partnerScore {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: #aaa;
+}
+
+.partnerScoreWin {
+  color: #00c9a7;
+  font-weight: 600;
+}
+
+.partnerScoreLoss {
+  color: #e94560;
+  font-weight: 600;
+}
+
+.partnerActions {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.continueBtn {
+  background: #00c9a7;
+  color: #1a1a2e;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.continueBtn:hover {
+  background: #00a88a;
+  transform: translateY(-1px);
+}
+
+.newGameBtn {
+  background: rgba(233, 69, 96, 0.2);
+  color: #e94560;
+  border: 1px solid rgba(233, 69, 96, 0.4);
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.newGameBtn:hover {
+  background: rgba(233, 69, 96, 0.3);
+}
+
+.clearScoreBtn {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.15);
+  color: #888;
+  border-radius: 6px;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.clearScoreBtn:hover {
+  border-color: #e94560;
+  color: #e94560;
+}
+
+.clearScorePending {
+  background: rgba(247, 183, 49, 0.15);
+  border-color: rgba(247, 183, 49, 0.4);
+  color: #f7b731;
+}
+
+.clearScoreConfirmed {
+  background: rgba(0, 201, 167, 0.15);
+  border-color: rgba(0, 201, 167, 0.4);
+  color: #00c9a7;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: #666;
+}
+
+.emptyStateIcon {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.noPartners {
+  color: #555;
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 1.5rem;
+  background: rgba(255,255,255,0.03);
+  border-radius: 10px;
+  border: 1px dashed rgba(255,255,255,0.1);
+}
+
+.tabsContainer {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.tab {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #888;
+  border-radius: 8px 8px 0 0;
+  padding: 0.6rem 1.2rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tab:hover {
+  background: rgba(255,255,255,0.08);
+  color: #aaa;
+}
+
+.tabActive {
+  background: rgba(233, 69, 96, 0.2);
+  border-color: rgba(233, 69, 96, 0.4);
+  color: #e94560;
+  font-weight: 600;
+}

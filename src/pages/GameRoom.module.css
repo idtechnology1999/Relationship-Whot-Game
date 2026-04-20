@@ -58,6 +58,135 @@
 }
 .deckInfo strong { color: #eaeaea; }
 
+.scoreBtn {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.15);
+  color: #aaa;
+  border-radius: 6px;
+  padding: 0.3rem 0.6rem;
+  cursor: pointer;
+  font-size: 0.75rem;
+  transition: all 0.2s;
+  margin-left: 0.5rem;
+}
+.scoreBtn:hover {
+  border-color: #f7b731;
+  color: #f7b731;
+}
+
+.scoreDisplay {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.scoreWin {
+  color: #00c9a7;
+  font-weight: 600;
+}
+
+.scoreLoss {
+  color: #e94560;
+  font-weight: 600;
+}
+
+.scoreModal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.scoreModalBox {
+  background: linear-gradient(145deg, #16213e, #1a1a2e);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+  padding: 1.5rem 2rem;
+  max-width: 320px;
+  width: 90%;
+  text-align: center;
+}
+
+.scoreModalTitle {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: #fff;
+}
+
+.scoreModalContent {
+  margin-bottom: 1.5rem;
+}
+
+.scoreModalScore {
+  font-size: 2rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.scoreModalActions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.scoreModalBtn {
+  border-radius: 8px;
+  padding: 0.6rem 1.2rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.scoreModalBtnPrimary {
+  background: #f7b731;
+  color: #1a1a2e;
+  border: none;
+}
+
+.scoreModalBtnPrimary:hover {
+  background: #d9a025;
+}
+
+.scoreModalBtnSecondary {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #aaa;
+}
+
+.scoreModalBtnSecondary:hover {
+  border-color: #eaeaea;
+  color: #eaeaea;
+}
+
+.scoreModalClose {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: transparent;
+  border: none;
+  color: #888;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
 /* ── Banners ─────────────────────────────────────────────────────────────── */
 .waitingBanner {
   display: flex;
