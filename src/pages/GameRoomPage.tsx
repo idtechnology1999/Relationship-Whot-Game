@@ -68,62 +68,110 @@ const SHAPES = ['Circle', 'Triangle', 'Cross', 'Square', 'Star'] as const
 
 // ── Sound utilities ───────────────────────────────────────────────────────────
 let audioCtx: AudioContext | null = null
-function getAudioCtx() {
-  if (!audioCtx) audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)()
+
+function getAudioCtx(): AudioContext {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)()
+  }
+  if (audioCtx.state === 'suspended') audioCtx.resume()
   return audioCtx
 }
 
-function playCardSound() {
+function tone(freq: number, dur: number, type: OscillatorType = 'sine', vol = 0.28, startAt = 0) {
   try {
     const ctx = getAudioCtx()
     const osc = ctx.createOscillator()
     const gain = ctx.createGain()
     osc.connect(gain)
     gain.connect(ctx.destination)
-    osc.type = 'sine'
-    osc.frequency.setValueAtTime(700, ctx.currentTime)
-    osc.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.09)
-    gain.gain.setValueAtTime(0.25, ctx.currentTime)
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.13)
-    osc.start()
-    osc.stop(ctx.currentTime + 0.13)
+    osc.type = type
+    osc.frequency.value = freq
+    const t = ctx.currentTime + startAt
+    gain.gain.setValueAtTime(vol, t)
+    gain.gain.exponentialRampToValueAtTime(0.001, t + dur)
+    osc.start(t)
+    osc.stop(t + dur)
   } catch {}
 }
 
-function playWinSound() {
+// Regular card flip — short swoosh
+function playCardSound() {
   try {
     const ctx = getAudioCtx()
-    const notes = [523, 659, 784, 1047]
-    notes.forEach((freq, i) => {
-      const osc = ctx.createOscillator()
-      const gain = ctx.createGain()
-      osc.connect(gain)
-      gain.connect(ctx.destination)
-      osc.type = 'sine'
-      const t = ctx.currentTime + i * 0.14
-      osc.frequency.value = freq
-      gain.gain.setValueAtTime(0, t)
-      gain.gain.linearRampToValueAtTime(0.28, t + 0.05)
-      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.45)
-      osc.start(t)
-      osc.stop(t + 0.45)
-    })
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+    osc.connect(gain); gain.connect(ctx.destination)
+    osc.type = 'triangle'
+    osc.frequency.setValueAtTime(900, ctx.currentTime)
+    osc.frequency.exponentialRampToValueAtTime(350, ctx.currentTime + 0.08)
+    gain.gain.setValueAtTime(0.22, ctx.currentTime)
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1)
+    osc.start(); osc.stop(ctx.currentTime + 0.1)
   } catch {}
 }
 
+// Special card (Pick2 / Pick5 / WHOT / Suspend / HoldOn) — dramatic hit
+function playSpecialCardSound() {
+  tone(220, 0.12, 'sawtooth', 0.25, 0)
+  tone(440, 0.22, 'sawtooth', 0.18, 0.07)
+  tone(660, 0.18, 'sine',     0.15, 0.16)
+}
+
+// Pick penalty alarm — 3 urgent beeps
+function playPickAlarmSound() {
+  [0, 0.19, 0.38].forEach(t => tone(880, 0.13, 'square', 0.28, t))
+}
+
+// Win jingle — ascending 5-note fanfare
+function playWinJingle() {
+  [523, 659, 784, 988, 1319].forEach((f, i) => {
+    tone(f, 0.55, 'sine', 0.3, i * 0.13)
+  })
+}
+
+// Lose sound — descending sad tones
+function playLoseSound() {
+  [440, 370, 311, 247].forEach((f, i) => {
+    tone(f, 0.45, 'sine', 0.22, i * 0.16)
+  })
+}
+
+// Lady voice — loads voices async-safely
 function speakLady(text: string) {
   try {
     window.speechSynthesis.cancel()
     const utter = new SpeechSynthesisUtterance(text)
-    utter.rate = 0.88
-    utter.pitch = 1.3
-    const voices = window.speechSynthesis.getVoices()
-    const female = voices.find(v =>
-      /samantha|zira|victoria|fiona|karen|moira|tessa|veena|joanna|salli|kimberly|kendra|ivy|female/i.test(v.name)
-    )
-    if (female) utter.voice = female
-    window.speechSynthesis.speak(utter)
+    utter.rate = 0.87
+    utter.pitch = 1.25
+
+    function doSpeak() {
+      const voices = window.speechSynthesis.getVoices()
+      const female = voices.find(v =>
+        /samantha|zira|victoria|fiona|karen|moira|tessa|veena|joanna|salli|kimberly|kendra|ivy|female/i.test(v.name)
+      )
+      if (female) utter.voice = female
+      window.speechSynthesis.speak(utter)
+    }
+
+    if (window.speechSynthesis.getVoices().length > 0) {
+      doSpeak()
+    } else {
+      window.speechSynthesis.onvoiceschanged = () => {
+        window.speechSynthesis.onvoiceschanged = null
+        doSpeak()
+      }
+    }
   } catch {}
+}
+
+const SPECIAL_CARD_NUMS = new Set([1, 2, 5, 8, 14, 20])
+
+function soundForAction(action: string) {
+  const m = action.match(/played (?:General Market|\w+ (\d+))/)
+  if (!m) return
+  const num = m[1] ? parseInt(m[1]) : 14
+  if (SPECIAL_CARD_NUMS.has(num)) playSpecialCardSound()
+  else playCardSound()
 }
 
 // ── Confetti component ────────────────────────────────────────────────────────
@@ -263,12 +311,14 @@ export default function GameRoomPage() {
   const selectedCardIdxRef = useRef<number | null>(null)
   const socketRef = useRef<Socket | null>(null)
   const prevPendingPickupRef = useRef<number>(0)
+  const myUsernameRef = useRef<string>('')
 
   // Keep refs in sync
   gameStateRef.current    = gameState
   selectedPileRef.current = selectedPile
   selectedCardIdxRef.current = selectedCardIdx
   socketRef.current       = socket
+  myUsernameRef.current   = user?.username ?? ''
 
   // Fetch room key and score so host can share it
   useEffect(() => {
@@ -311,8 +361,13 @@ export default function GameRoomPage() {
       setConnectTimeout(false)
       const prev = prevPendingPickupRef.current
       if (state.pendingPickup > prev && state.isMyTurn) {
+        playPickAlarmSound()
         const n = state.pendingPickup
-        speakLady(n >= 5 ? `Pick ${n} cards!` : n === 2 ? 'Pick two cards!' : `Pick ${n} cards!`)
+        setTimeout(() => speakLady(
+          n === 2 ? 'Pick two cards or counter!'
+          : n === 3 ? 'Pick three cards or counter!'
+          : `Pick ${n} cards or counter!`
+        ), 200)
       }
       prevPendingPickupRef.current = state.pendingPickup
       setGameState(state)
@@ -327,15 +382,14 @@ export default function GameRoomPage() {
 
     s.on('game-over', ({ winner: w }: { winner: string }) => {
       setWinner(w)
-      playWinSound()
-      const myUsername = (gameStateRef.current?.host?.username === w || gameStateRef.current?.guest?.username === w)
-        ? w : w
-      const isMe = myUsername === (gameStateRef.current?.myRole === 'host'
-        ? gameStateRef.current?.host?.username
-        : gameStateRef.current?.guest?.username)
-      setTimeout(() => {
-        speakLady(isMe ? 'Congratulations! You win!' : `${w} wins! Better luck next time!`)
-      }, 600)
+      const isMe = w === myUsernameRef.current
+      if (isMe) {
+        playWinJingle()
+        setTimeout(() => speakLady('Congratulations! You win! Well done!'), 700)
+      } else {
+        playLoseSound()
+        setTimeout(() => speakLady(`${w} wins! Better luck next time!`), 700)
+      }
       axios
         .get(`/api/game/session-score/${sessionId}`, { headers: { Authorization: `Bearer ${token}` } })
         .then(({ data }) => setLiveScore({ myWins: data.myWins || 0, partnerWins: data.partnerWins || 0 }))
@@ -344,9 +398,15 @@ export default function GameRoomPage() {
 
     s.on('action-log', ({ player, action }: { player: string; action: string }) => {
       addLog(`${player} ${action}`)
-      playCardSound()
+      soundForAction(action)
       if (/general market/i.test(action)) {
-        setTimeout(() => speakLady('General market! Pick a card!'), 300)
+        setTimeout(() => speakLady('General market! Everybody picks a card!'), 350)
+      } else if (/played \w+ 2\b/.test(action)) {
+        setTimeout(() => speakLady('Pick two!'), 300)
+      } else if (/played \w+ 5\b/.test(action)) {
+        setTimeout(() => speakLady('Pick three!'), 300)
+      } else if (/WINS/i.test(action)) {
+        // winner voice is handled in game-over handler
       }
     })
 
