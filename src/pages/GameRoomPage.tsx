@@ -320,6 +320,27 @@ export default function GameRoomPage() {
   socketRef.current       = socket
   myUsernameRef.current   = user?.username ?? ''
 
+  // Unlock Web Audio on first user interaction (browser security requirement)
+  useEffect(() => {
+    function unlock() {
+      try {
+        const ctx = getAudioCtx()
+        if (ctx.state === 'suspended') ctx.resume()
+      } catch {}
+      document.removeEventListener('click', unlock, true)
+      document.removeEventListener('keydown', unlock, true)
+      document.removeEventListener('touchstart', unlock, true)
+    }
+    document.addEventListener('click', unlock, true)
+    document.addEventListener('keydown', unlock, true)
+    document.addEventListener('touchstart', unlock, true)
+    return () => {
+      document.removeEventListener('click', unlock, true)
+      document.removeEventListener('keydown', unlock, true)
+      document.removeEventListener('touchstart', unlock, true)
+    }
+  }, [])
+
   // Fetch room key and score so host can share it
   useEffect(() => {
     if (!token || !sessionId) return
