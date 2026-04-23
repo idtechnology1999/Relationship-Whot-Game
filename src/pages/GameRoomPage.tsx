@@ -136,31 +136,15 @@ function playLoseSound() {
   })
 }
 
-// Lady voice — loads voices async-safely
+// Lady voice — high pitch makes any installed voice sound feminine
 function speakLady(text: string) {
   try {
     window.speechSynthesis.cancel()
     const utter = new SpeechSynthesisUtterance(text)
-    utter.rate = 0.87
-    utter.pitch = 1.25
-
-    function doSpeak() {
-      const voices = window.speechSynthesis.getVoices()
-      const female = voices.find(v =>
-        /samantha|zira|victoria|fiona|karen|moira|tessa|veena|joanna|salli|kimberly|kendra|ivy|female/i.test(v.name)
-      )
-      if (female) utter.voice = female
-      window.speechSynthesis.speak(utter)
-    }
-
-    if (window.speechSynthesis.getVoices().length > 0) {
-      doSpeak()
-    } else {
-      window.speechSynthesis.onvoiceschanged = () => {
-        window.speechSynthesis.onvoiceschanged = null
-        doSpeak()
-      }
-    }
+    utter.rate = 0.9
+    utter.pitch = 1.7  // high pitch = feminine sound on any voice
+    utter.volume = 1
+    window.speechSynthesis.speak(utter)
   } catch {}
 }
 
