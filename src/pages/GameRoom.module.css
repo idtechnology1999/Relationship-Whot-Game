@@ -907,6 +907,55 @@
   }
 }
 
+/* ── Win animation ─────────────────────────────────────────────────────────── */
+@keyframes winBounce {
+  0%, 100% { transform: translateY(0) scale(1); }
+  40%       { transform: translateY(-18px) scale(1.15); }
+  60%       { transform: translateY(-8px) scale(1.05); }
+}
+
+@keyframes winPulse {
+  0%, 100% { transform: scale(1); text-shadow: 0 0 0 transparent; }
+  50%       { transform: scale(1.06); text-shadow: 0 0 20px rgba(247, 183, 49, 0.6); }
+}
+
+@keyframes confettiFall {
+  0%   { transform: translateY(-60px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(110vh) rotate(540deg); opacity: 0; }
+}
+
+.winEmojis {
+  display: flex;
+  justify-content: center;
+  gap: 0.6rem;
+  margin-bottom: 0.6rem;
+}
+
+.winEmoji {
+  font-size: 2rem;
+  display: inline-block;
+  animation: winBounce 0.7s ease-in-out infinite alternate;
+}
+
+.overlayTitleWin {
+  animation: winPulse 1.2s ease-in-out infinite;
+}
+
+.confettiContainer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 101;
+}
+
+.confettiPiece {
+  position: absolute;
+  top: -10px;
+  border-radius: 2px;
+  animation: confettiFall linear infinite;
+}
+
 /* ── Responsive — Mobile (≤ 480px) ─────────────────────────────────────── */
 @media (max-width: 480px) {
   .topBar {

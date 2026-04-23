@@ -66,6 +66,89 @@ const SPECIAL_LABEL: Record<number, string> = {
 
 const SHAPES = ['Circle', 'Triangle', 'Cross', 'Square', 'Star'] as const
 
+// ── Sound utilities ───────────────────────────────────────────────────────────
+let audioCtx: AudioContext | null = null
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)()
+  return audioCtx
+}
+
+function playCardSound() {
+  try {
+    const ctx = getAudioCtx()
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+    osc.connect(gain)
+    gain.connect(ctx.destination)
+    osc.type = 'sine'
+    osc.frequency.setValueAtTime(700, ctx.currentTime)
+    osc.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.09)
+    gain.gain.setValueAtTime(0.25, ctx.currentTime)
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.13)
+    osc.start()
+    osc.stop(ctx.currentTime + 0.13)
+  } catch {}
+}
+
+function playWinSound() {
+  try {
+    const ctx = getAudioCtx()
+    const notes = [523, 659, 784, 1047]
+    notes.forEach((freq, i) => {
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.connect(gain)
+      gain.connect(ctx.destination)
+      osc.type = 'sine'
+      const t = ctx.currentTime + i * 0.14
+      osc.frequency.value = freq
+      gain.gain.setValueAtTime(0, t)
+      gain.gain.linearRampToValueAtTime(0.28, t + 0.05)
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.45)
+      osc.start(t)
+      osc.stop(t + 0.45)
+    })
+  } catch {}
+}
+
+function speakLady(text: string) {
+  try {
+    window.speechSynthesis.cancel()
+    const utter = new SpeechSynthesisUtterance(text)
+    utter.rate = 0.88
+    utter.pitch = 1.3
+    const voices = window.speechSynthesis.getVoices()
+    const female = voices.find(v =>
+      /samantha|zira|victoria|fiona|karen|moira|tessa|veena|joanna|salli|kimberly|kendra|ivy|female/i.test(v.name)
+    )
+    if (female) utter.voice = female
+    window.speechSynthesis.speak(utter)
+  } catch {}
+}
+
+// ── Confetti component ────────────────────────────────────────────────────────
+function Confetti() {
+  const pieces = Array.from({ length: 22 }, (_, i) => ({
+    id: i,
+    color: ['#f7b731', '#e94560', '#00c9a7', '#4a90d9', '#a855f7', '#ff8c00', '#fff'][i % 7],
+    left: `${4 + (i * 4.3) % 92}%`,
+    delay: `${((i * 0.17) % 1.8).toFixed(2)}s`,
+    duration: `${(1.4 + (i % 5) * 0.25).toFixed(2)}s`,
+    size: `${7 + (i % 4) * 3}px`,
+  }))
+  return (
+    <div className={styles.confettiContainer} aria-hidden>
+      {pieces.map(p => (
+        <div
+          key={p.id}
+          className={styles.confettiPiece}
+          style={{ left: p.left, backgroundColor: p.color, width: p.size, height: p.size, animationDelay: p.delay, animationDuration: p.duration }}
+        />
+      ))}
+    </div>
+  )
+}
+
 // ── Sub-components ────────────────────────────────────────────────────────────
 function CardFace({
   card,
@@ -179,6 +262,7 @@ export default function GameRoomPage() {
   const selectedPileRef = useRef<1 | 2 | null>(null)
   const selectedCardIdxRef = useRef<number | null>(null)
   const socketRef = useRef<Socket | null>(null)
+  const prevPendingPickupRef = useRef<number>(0)
 
   // Keep refs in sync
   gameStateRef.current    = gameState
@@ -225,6 +309,12 @@ export default function GameRoomPage() {
     s.on('game-state', (state: GameState) => {
       clearTimeout(timeoutId)
       setConnectTimeout(false)
+      const prev = prevPendingPickupRef.current
+      if (state.pendingPickup > prev && state.isMyTurn) {
+        const n = state.pendingPickup
+        speakLady(n >= 5 ? `Pick ${n} cards!` : n === 2 ? 'Pick two cards!' : `Pick ${n} cards!`)
+      }
+      prevPendingPickupRef.current = state.pendingPickup
       setGameState(state)
       if (state.guest) setWaitingForOpponent(false)
       if (state.winnerUsername) setWinner(state.winnerUsername)
@@ -237,7 +327,15 @@ export default function GameRoomPage() {
 
     s.on('game-over', ({ winner: w }: { winner: string }) => {
       setWinner(w)
-      // Refresh score after game ends
+      playWinSound()
+      const myUsername = (gameStateRef.current?.host?.username === w || gameStateRef.current?.guest?.username === w)
+        ? w : w
+      const isMe = myUsername === (gameStateRef.current?.myRole === 'host'
+        ? gameStateRef.current?.host?.username
+        : gameStateRef.current?.guest?.username)
+      setTimeout(() => {
+        speakLady(isMe ? 'Congratulations! You win!' : `${w} wins! Better luck next time!`)
+      }, 600)
       axios
         .get(`/api/game/session-score/${sessionId}`, { headers: { Authorization: `Bearer ${token}` } })
         .then(({ data }) => setLiveScore({ myWins: data.myWins || 0, partnerWins: data.partnerWins || 0 }))
@@ -246,6 +344,10 @@ export default function GameRoomPage() {
 
     s.on('action-log', ({ player, action }: { player: string; action: string }) => {
       addLog(`${player} ${action}`)
+      playCardSound()
+      if (/general market/i.test(action)) {
+        setTimeout(() => speakLady('General market! Pick a card!'), 300)
+      }
     })
 
     s.on('player-disconnected', ({ username }: { username: string }) => {
@@ -460,8 +562,19 @@ export default function GameRoomPage() {
       {/* WINNER OVERLAY */}
       {winner && (
         <div className={styles.overlay}>
+          {winner === myName && <Confetti />}
           <div className={styles.overlayBox}>
-            <div className={styles.overlayTitle}>
+            <div className={styles.winEmojis}>
+              {winner === myName
+                ? ['🎉', '💃', '🕺', '👏', '🎊'].map((e, i) => (
+                    <span key={i} className={styles.winEmoji} style={{ animationDelay: `${i * 0.12}s` }}>{e}</span>
+                  ))
+                : ['💪', '🔥', '😤'].map((e, i) => (
+                    <span key={i} className={styles.winEmoji} style={{ animationDelay: `${i * 0.12}s` }}>{e}</span>
+                  ))
+              }
+            </div>
+            <div className={`${styles.overlayTitle} ${winner === myName ? styles.overlayTitleWin : ''}`}>
               {winner === myName ? '🎉 You Win!' : `${winner} Wins!`}
             </div>
 

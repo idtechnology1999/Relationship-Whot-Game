@@ -17,14 +17,6 @@ interface Partner {
   lastPlayedAt: string | null
 }
 
-interface ActiveGame {
-  sessionId: string
-  connectionKey: string
-  opponent?: string
-  myWins?: number
-  partnerWins?: number
-}
-
 export default function DashboardPage() {
   const { user, token, logout } = useAuth()
   const navigate = useNavigate()
@@ -33,7 +25,6 @@ export default function DashboardPage() {
   const [generatedSessionId, setGeneratedSessionId] = useState('')
   const [enterKey, setEnterKey] = useState('')
   const [error, setError] = useState('')
-  const [activeSessions, setActiveSessions] = useState<ActiveGame[]>([])
   const [partners, setPartners] = useState<Partner[]>([])
   const [showTooltip, setShowTooltip] = useState(false)
   const [activeTab, setActiveTab] = useState<'partners' | 'new'>('partners')
@@ -62,16 +53,8 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!token) return
-    fetchActiveGames()
     fetchPartners()
   }, [token])
-
-  async function fetchActiveGames() {
-    try {
-      const { data } = await axios.get('/api/game/active', { headers: { Authorization: `Bearer ${token}` } })
-      setActiveSessions(data.sessions || [])
-    } catch {}
-  }
 
   async function fetchPartners() {
     try {
@@ -174,35 +157,6 @@ export default function DashboardPage() {
       <main className={styles.main}>
         <h2 className={styles.welcome}>Welcome back, <span>{user?.username}</span>!</h2>
         <p className={styles.desc}>Play with your partners or start a new game.</p>
-
-        {activeSessions.length > 0 && (
-          <div className={styles.activeGamesSection}>
-            <h3 className={styles.sectionTitle}>🎮 Active Games</h3>
-            <div className={styles.activeGamesGrid}>
-              {activeSessions.map((session) => (
-                <div key={session.sessionId} className={styles.activeGameCard}>
-                  <div className={styles.activeGameInfo}>
-                    <div className={styles.activeGameHeader}>
-                      <span className={styles.activeGameVs}>vs</span>
-                      <span className={styles.activeGameOpponent}>
-                        {session.opponent || 'Game in Progress'}
-                      </span>
-                    </div>
-                    <div className={styles.activeGameScore}>
-                      <span className={styles.activeGameMyScore}>{session.myWins || 0}</span>
-                      <span className={styles.activeGameScoreDivider}>-</span>
-                      <span className={styles.activeGamePartnerScore}>{session.partnerWins || 0}</span>
-                    </div>
-                    <span className={styles.activeGameStatus}>Active Now</span>
-                  </div>
-                  <button className={styles.continueBtn} onClick={() => continueGame(session.sessionId)}>
-                    Join →
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
 
         <div className={styles.tabsContainer}>
           <button
