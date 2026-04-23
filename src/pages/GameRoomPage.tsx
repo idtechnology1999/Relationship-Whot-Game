@@ -77,7 +77,7 @@ function getAudioCtx(): AudioContext {
   return audioCtx
 }
 
-function tone(freq: number, dur: number, type: OscillatorType = 'sine', vol = 0.28, startAt = 0) {
+function tone(freq: number, dur: number, type: OscillatorType = 'sine', vol = 0.35, startAt = 0) {
   try {
     const ctx = getAudioCtx()
     const osc = ctx.createOscillator()
@@ -90,11 +90,11 @@ function tone(freq: number, dur: number, type: OscillatorType = 'sine', vol = 0.
     gain.gain.setValueAtTime(vol, t)
     gain.gain.exponentialRampToValueAtTime(0.001, t + dur)
     osc.start(t)
-    osc.stop(t + dur)
+    osc.stop(t + dur + 0.01)
   } catch {}
 }
 
-// Regular card flip — short swoosh
+// Regular card flip
 function playCardSound() {
   try {
     const ctx = getAudioCtx()
@@ -102,47 +102,44 @@ function playCardSound() {
     const gain = ctx.createGain()
     osc.connect(gain); gain.connect(ctx.destination)
     osc.type = 'triangle'
-    osc.frequency.setValueAtTime(900, ctx.currentTime)
-    osc.frequency.exponentialRampToValueAtTime(350, ctx.currentTime + 0.08)
-    gain.gain.setValueAtTime(0.22, ctx.currentTime)
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1)
-    osc.start(); osc.stop(ctx.currentTime + 0.1)
+    osc.frequency.setValueAtTime(1000, ctx.currentTime)
+    osc.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.09)
+    gain.gain.setValueAtTime(0.35, ctx.currentTime)
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12)
+    osc.start()
+    osc.stop(ctx.currentTime + 0.13)
   } catch {}
 }
 
-// Special card (Pick2 / Pick5 / WHOT / Suspend / HoldOn) — dramatic hit
+// Special card (Pick2/Pick5/WHOT/Suspend/HoldOn/GenMarket)
 function playSpecialCardSound() {
-  tone(220, 0.12, 'sawtooth', 0.25, 0)
-  tone(440, 0.22, 'sawtooth', 0.18, 0.07)
-  tone(660, 0.18, 'sine',     0.15, 0.16)
+  tone(180, 0.10, 'sawtooth', 0.3, 0)
+  tone(360, 0.18, 'sawtooth', 0.25, 0.06)
+  tone(720, 0.22, 'sine',     0.2,  0.15)
 }
 
-// Pick penalty alarm — 3 urgent beeps
+// Pick penalty — 3 urgent alarm beeps
 function playPickAlarmSound() {
-  [0, 0.19, 0.38].forEach(t => tone(880, 0.13, 'square', 0.28, t))
+  [0, 0.2, 0.4].forEach(t => tone(960, 0.14, 'square', 0.35, t))
 }
 
-// Win jingle — ascending 5-note fanfare
+// Win fanfare — ascending 5-note jingle
 function playWinJingle() {
-  [523, 659, 784, 988, 1319].forEach((f, i) => {
-    tone(f, 0.55, 'sine', 0.3, i * 0.13)
-  })
+  [523, 659, 784, 988, 1319].forEach((f, i) => tone(f, 0.6, 'sine', 0.32, i * 0.14))
 }
 
-// Lose sound — descending sad tones
+// Lose — descending sad tones
 function playLoseSound() {
-  [440, 370, 311, 247].forEach((f, i) => {
-    tone(f, 0.45, 'sine', 0.22, i * 0.16)
-  })
+  [440, 370, 311, 247].forEach((f, i) => tone(f, 0.5, 'sine', 0.25, i * 0.18))
 }
 
-// Lady voice — high pitch makes any installed voice sound feminine
+// Lady voice — pitch 1.7 makes any voice sound feminine
 function speakLady(text: string) {
   try {
     window.speechSynthesis.cancel()
     const utter = new SpeechSynthesisUtterance(text)
     utter.rate = 0.9
-    utter.pitch = 1.7  // high pitch = feminine sound on any voice
+    utter.pitch = 1.7
     utter.volume = 1
     window.speechSynthesis.speak(utter)
   } catch {}
@@ -285,6 +282,8 @@ export default function GameRoomPage() {
   const [showScoreModal, setShowScoreModal] = useState(false)
   const [scoreData, setScoreData] = useState<{ myWins: number; partnerWins: number; clearStatus: string; isMyRequest: boolean } | null>(null)
   const [liveScore, setLiveScore] = useState<{ myWins: number; partnerWins: number }>({ myWins: 0, partnerWins: 0 })
+  const [soundOn, setSoundOn] = useState(true)
+  const soundOnRef = useRef(true)
 
   // Keyboard / interaction state
   const [selectedPile, setSelectedPile] = useState<1 | 2 | null>(null)
@@ -298,11 +297,12 @@ export default function GameRoomPage() {
   const myUsernameRef = useRef<string>('')
 
   // Keep refs in sync
-  gameStateRef.current    = gameState
-  selectedPileRef.current = selectedPile
+  gameStateRef.current       = gameState
+  selectedPileRef.current    = selectedPile
   selectedCardIdxRef.current = selectedCardIdx
-  socketRef.current       = socket
-  myUsernameRef.current   = user?.username ?? ''
+  socketRef.current          = socket
+  myUsernameRef.current      = user?.username ?? ''
+  soundOnRef.current         = soundOn
 
   // Unlock Web Audio on first user interaction (browser security requirement)
   useEffect(() => {
@@ -365,7 +365,7 @@ export default function GameRoomPage() {
       clearTimeout(timeoutId)
       setConnectTimeout(false)
       const prev = prevPendingPickupRef.current
-      if (state.pendingPickup > prev && state.isMyTurn) {
+      if (state.pendingPickup > prev && state.isMyTurn && soundOnRef.current) {
         playPickAlarmSound()
         const n = state.pendingPickup
         setTimeout(() => speakLady(
@@ -388,12 +388,14 @@ export default function GameRoomPage() {
     s.on('game-over', ({ winner: w }: { winner: string }) => {
       setWinner(w)
       const isMe = w === myUsernameRef.current
-      if (isMe) {
-        playWinJingle()
-        setTimeout(() => speakLady('Congratulations! You win! Well done!'), 700)
-      } else {
-        playLoseSound()
-        setTimeout(() => speakLady(`${w} wins! Better luck next time!`), 700)
+      if (soundOnRef.current) {
+        if (isMe) {
+          playWinJingle()
+          setTimeout(() => speakLady('Congratulations! You win! Well done!'), 700)
+        } else {
+          playLoseSound()
+          setTimeout(() => speakLady(`${w} wins! Better luck next time!`), 700)
+        }
       }
       axios
         .get(`/api/game/session-score/${sessionId}`, { headers: { Authorization: `Bearer ${token}` } })
@@ -403,15 +405,18 @@ export default function GameRoomPage() {
 
     s.on('action-log', ({ player, action }: { player: string; action: string }) => {
       addLog(`${player} ${action}`)
-      soundForAction(action)
-      if (/general market/i.test(action)) {
-        setTimeout(() => speakLady('General market! Everybody picks a card!'), 350)
-      } else if (/played \w+ 2\b/.test(action)) {
-        setTimeout(() => speakLady('Pick two!'), 300)
-      } else if (/played \w+ 5\b/.test(action)) {
-        setTimeout(() => speakLady('Pick three!'), 300)
-      } else if (/WINS/i.test(action)) {
-        // winner voice is handled in game-over handler
+      const isOpponent = player !== myUsernameRef.current
+      if (soundOnRef.current) {
+        // Only play card sound for opponent (my own card already played it on click)
+        if (isOpponent) soundForAction(action)
+
+        if (/general market/i.test(action)) {
+          setTimeout(() => speakLady('General market! Everybody picks a card!'), 350)
+        } else if (/played \w+ 2\b/.test(action) && isOpponent) {
+          setTimeout(() => speakLady('Pick two!'), 300)
+        } else if (/played \w+ 5\b/.test(action) && isOpponent) {
+          setTimeout(() => speakLady('Pick three!'), 300)
+        }
       }
     })
 
@@ -480,16 +485,19 @@ export default function GameRoomPage() {
 
   // ── Actions ────────────────────────────────────────────────────────────────
   const playCard = useCallback((cardId: string, pile: 1 | 2) => {
+    if (soundOnRef.current) playCardSound()   // direct click = guaranteed unlock
     socketRef.current?.emit('play-card', { sessionId, cardId, pileNum: pile })
     setSelectedCardIdx(null)
     setSelectedPile(null)
   }, [sessionId])
 
   const callShape = useCallback((shape: string) => {
+    if (soundOnRef.current) playCardSound()
     socketRef.current?.emit('call-shape', { sessionId, shape })
   }, [sessionId])
 
   const pickMarket = useCallback(() => {
+    if (soundOnRef.current) playCardSound()
     socketRef.current?.emit('pick-market', { sessionId })
     setSelectedCardIdx(null)
   }, [sessionId])
@@ -739,6 +747,22 @@ export default function GameRoomPage() {
           </span>
           <button className={styles.scoreBtn} onClick={() => setShowScoreModal(true)}>
             Full Score
+          </button>
+          <button
+            className={styles.scoreBtn}
+            title={soundOn ? 'Sound ON — click to mute' : 'Sound OFF — click to unmute'}
+            onClick={() => {
+              const next = !soundOn
+              setSoundOn(next)
+              if (next) {
+                playCardSound()   // test beep to confirm sound works
+                speakLady('Sound on!')
+              } else {
+                window.speechSynthesis.cancel()
+              }
+            }}
+          >
+            {soundOn ? '🔊' : '🔇'}
           </button>
         </div>
       </header>
